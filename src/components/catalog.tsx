@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { CATEGORIES } from "../data/products";
+import { useCatalog } from "../hooks/useCatalog";
 
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 24 },
@@ -10,6 +10,8 @@ const fadeUp = (delay: number) => ({
 });
 
 export default function Catalog() {
+  const CATEGORIES = useCatalog();
+
   return (
     <section id="catalog" className="px-5 sm:px-8 py-16 sm:py-24 max-w-6xl mx-auto">
       <motion.div {...fadeUp(0)} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 sm:mb-14">

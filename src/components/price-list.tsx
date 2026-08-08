@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { CATEGORIES } from "../data/products";
+import { useCatalog } from "../hooks/useCatalog";
 import { useOrder } from "./order-modal";
 
 const fadeUp = (delay: number) => ({
@@ -12,9 +12,11 @@ const fadeUp = (delay: number) => ({
 });
 
 export default function PriceList() {
+  const CATEGORIES = useCatalog();
   const [active, setActive] = useState(0);
   const { openOrder } = useOrder();
-  const cat = CATEGORIES[active];
+  // список групп приходит из базы и может оказаться короче, чем был при клике
+  const cat = CATEGORIES[active] ?? CATEGORIES[0];
 
   return (
     <section id="price" className="px-5 sm:px-8 py-16 sm:py-24 max-w-6xl mx-auto">
