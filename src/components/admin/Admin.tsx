@@ -71,7 +71,7 @@ export default function Admin() {
       password: String(f.get('password')),
     });
     setBusy(false);
-    if (error) setMsg('Не удалось войти. Проверьте почту и пароль.');
+    if (error) setMsg(loginError(error.message));
   }
 
   if (!ready)
@@ -181,6 +181,24 @@ export default function Admin() {
       )}
     </div>
   );
+}
+
+/**
+ * Supabase отвечает по-английски и довольно скупо. Разворачиваем ответ
+ * в понятную причину: «проверьте почту и пароль» одинаково выглядит и при
+ * опечатке, и при неподтверждённой почте, а чинится это по-разному.
+ */
+function loginError(raw: string) {
+  const m = raw.toLowerCase();
+  if (m.includes('email not confirmed'))
+    return 'Пользователь не подтверждён. В Supabase → Authentication → Users откройте его и включите Auto Confirm, либо заведите заново с этой галочкой.';
+  if (m.includes('invalid login credentials'))
+    return 'Почта или пароль не подходят. Проверьте раскладку и то, что пользователь заведён именно в этом проекте Supabase.';
+  if (m.includes('signups not allowed') || m.includes('email logins are disabled'))
+    return 'Вход по почте выключен в настройках Supabase: Authentication → Sign In / Providers → Email.';
+  if (m.includes('failed to fetch') || m.includes('networkerror'))
+    return 'Не удалось достучаться до базы. Проверьте VITE_SUPABASE_URL и то, что после его добавления был Redeploy.';
+  return 'Не удалось войти. Ответ базы: ' + raw;
 }
 
 function Screen({ children }: { children: React.ReactNode }) {
