@@ -70,6 +70,25 @@ export default function ProductsTab({
   async function seed() {
     if (!confirm('Загрузить в базу прайс из кода сайта? Делается один раз.')) return;
     setBusy(true);
+
+    // Товар ссылается на группу внешним ключом, поэтому группы должны
+    // оказаться в базе первыми. Заводим их сами, чтобы порядок вкладок
+    // не имел значения.
+    const { error: catsError } = await supabase!.from('categories').upsert(
+      CATEGORIES.map((c, i) => ({
+        slug: c.slug,
+        name: c.name,
+        descr: c.desc,
+        photo: c.photo,
+        sort: i,
+      })),
+      { onConflict: 'slug' }
+    );
+    if (catsError) {
+      setBusy(false);
+      return flash('Не удалось создать группы: ' + catsError.message);
+    }
+
     const payload = CATEGORIES.flatMap((c) =>
       c.products.map((p, i) => ({
         category: c.slug,

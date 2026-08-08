@@ -102,14 +102,17 @@ export default function CategoriesTab({
   /** Первичное наполнение: переносим четыре группы из кода в базу. */
   async function seed() {
     setBusy(true);
-    const { error } = await supabase!.from('categories').insert(
+    // upsert, а не insert: группы могли уже появиться при импорте прайса
+    // на соседней вкладке, и повторное нажатие не должно падать с ошибкой
+    const { error } = await supabase!.from('categories').upsert(
       CATEGORIES.map((c, i) => ({
         slug: c.slug,
         name: c.name,
         descr: c.desc,
         photo: c.photo,
         sort: i,
-      }))
+      })),
+      { onConflict: 'slug' }
     );
     setBusy(false);
     if (error) return flash('Ошибка: ' + error.message);
