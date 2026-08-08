@@ -1,0 +1,26 @@
+# dependencies
+node_modules
+
+# output
+dist
+*.tgz
+
+# logs
+logs
+*.log
+npm-debug.*
+
+# dotenv environment variable files
+.env
+.env*.local
+
+# caches
+.cache
+*.tsbuildinfo
+.vercel
+
+# IDE
+.idea
+
+# macOS
+.DS_Store
