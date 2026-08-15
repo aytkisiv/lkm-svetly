@@ -17,7 +17,7 @@ export function useCatalog(): ProductCategory[] {
     (async () => {
       const [cats, prods] = await Promise.all([
         supabase.from('categories').select('slug,name,descr,photo,sort').order('sort'),
-        supabase.from('products').select('category,name,note,price,sort').order('sort'),
+        supabase.from('products').select('category,name,note,price,photo,sort').order('sort'),
       ]);
       if (!alive || prods.error || !prods.data?.length) return;
 
@@ -38,7 +38,12 @@ export function useCatalog(): ProductCategory[] {
           ...c,
           products: prods.data
             .filter((p) => p.category === c.slug)
-            .map((p) => ({ name: p.name, note: p.note ?? undefined, price: p.price })),
+            .map((p) => ({
+              name: p.name,
+              note: p.note ?? undefined,
+              price: p.price,
+              photo: p.photo ?? undefined,
+            })),
         }))
       );
     })();

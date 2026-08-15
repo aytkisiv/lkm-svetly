@@ -35,5 +35,6 @@ export type DbProduct = {
   name: string;
   note: string | null;
   price: number;
+  photo: string | null;
   sort: number;
 };

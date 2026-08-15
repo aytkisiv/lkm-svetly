@@ -44,7 +44,7 @@ async function onMessage(msg: any) {
   if (!allowed(chatId)) {
     await tg('sendMessage', {
       chat_id: chatId,
-      text: 'Этот бот только для сотрудников ЛКМ ОПТ.',
+      text: 'Этот бот только для сотрудников ЛКМ СНАБ.',
     });
     return;
   }
@@ -76,7 +76,7 @@ async function sendMenu(chatId: number, name?: string) {
     chat_id: chatId,
     parse_mode: 'HTML',
     text:
-      `<b>ЛКМ ОПТ — бот отдела продаж</b>\n\n` +
+      `<b>ЛКМ СНАБ — бот отдела продаж</b>\n\n` +
       (name ? `Здравствуйте, ${esc(name)}!\n\n` : '') +
       `Сюда падают заявки с сайта. Ещё умею:\n\n` +
       `📋 <b>Прайс</b> — цены по категориям\n` +

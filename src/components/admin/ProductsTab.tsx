@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trash2, Plus, Check } from 'lucide-react';
+import { Trash2, Plus, Check, ImageOff } from 'lucide-react';
 import { supabase, type DbCategory, type DbProduct } from '../../lib/supabase';
 import { CATEGORIES } from '../../data/products';
 import { btnGhost, btnDark, input } from './ui';
@@ -35,7 +35,12 @@ export default function ProductsTab({
     setBusy(true);
     const { error } = await supabase!
       .from('products')
-      .update({ name: row.name.trim(), note: row.note?.trim() || null, price: row.price })
+      .update({
+        name: row.name.trim(),
+        note: row.note?.trim() || null,
+        price: row.price,
+        photo: row.photo?.trim() || null,
+      })
       .eq('id', row.id);
     setBusy(false);
     if (error) return flash('Ошибка сохранения: ' + error.message);
@@ -151,43 +156,59 @@ export default function ProductsTab({
         </div>
 
         {visible.map((row) => (
-          <div
-            key={row.id}
-            className="grid sm:grid-cols-[1fr_1fr_120px_170px] gap-3 items-center px-5 py-3 border-b border-[#f0eeea] last:border-0"
-          >
-            <input
-              value={row.name}
-              onChange={(e) => edit(row.id, { name: e.target.value })}
-              className={input}
-            />
-            <input
-              value={row.note ?? ''}
-              placeholder="—"
-              onChange={(e) => edit(row.id, { note: e.target.value })}
-              className={`${input} text-neutral-600 placeholder:text-neutral-300`}
-            />
-            <input
-              type="number"
-              min={0}
-              value={row.price}
-              onChange={(e) => edit(row.id, { price: Number(e.target.value) })}
-              className={input}
-            />
-            <div className="flex items-center gap-2 justify-end">
-              {row.dirty && (
-                <button onClick={() => save(row)} disabled={busy} className={btnDark}>
-                  <Check className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                  Сохранить
+          <div key={row.id} className="px-5 py-3 border-b border-[#f0eeea] last:border-0">
+            <div className="grid sm:grid-cols-[1fr_1fr_120px_170px] gap-3 items-center">
+              <input
+                value={row.name}
+                onChange={(e) => edit(row.id, { name: e.target.value })}
+                className={input}
+              />
+              <input
+                value={row.note ?? ''}
+                placeholder="—"
+                onChange={(e) => edit(row.id, { note: e.target.value })}
+                className={`${input} text-neutral-600 placeholder:text-neutral-300`}
+              />
+              <input
+                type="number"
+                min={0}
+                value={row.price}
+                onChange={(e) => edit(row.id, { price: Number(e.target.value) })}
+                className={input}
+              />
+              <div className="flex items-center gap-2 justify-end">
+                {row.dirty && (
+                  <button onClick={() => save(row)} disabled={busy} className={btnDark}>
+                    <Check className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                    Сохранить
+                  </button>
+                )}
+                <button
+                  onClick={() => remove(row)}
+                  disabled={busy}
+                  aria-label="Удалить"
+                  className="p-2 text-neutral-300 hover:text-[#e8501f] transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
-              )}
-              <button
-                onClick={() => remove(row)}
-                disabled={busy}
-                aria-label="Удалить"
-                className="p-2 text-neutral-300 hover:text-[#e8501f] transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              </div>
+            </div>
+
+            {/* фото для подсказки при наведении на позицию в прайсе на сайте */}
+            <div className="flex items-center gap-3 mt-2">
+              <div className="w-10 h-10 rounded-lg border border-[#e7e5e0] bg-[#f4f3ef] overflow-hidden shrink-0 flex items-center justify-center">
+                {row.photo ? (
+                  <img src={row.photo} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <ImageOff className="w-4 h-4 text-neutral-300" />
+                )}
+              </div>
+              <input
+                value={row.photo ?? ''}
+                placeholder="Ссылка на фото банки (необязательно)"
+                onChange={(e) => edit(row.id, { photo: e.target.value })}
+                className={`${input} text-[13px] text-neutral-500 placeholder:text-neutral-300`}
+              />
             </div>
           </div>
         ))}

@@ -2,6 +2,7 @@ export type Product = {
   name: string;
   note?: string;
   price: number; // руб. за 1 кг
+  photo?: string; // фото банки/канистры для подсказки при наведении в прайсе
 };
 
 export type ProductCategory = {

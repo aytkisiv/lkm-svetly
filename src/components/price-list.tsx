@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useCatalog } from "../hooks/useCatalog";
 import { useOrder } from "./order-modal";
@@ -17,6 +17,9 @@ export default function PriceList() {
   const { openOrder } = useOrder();
   // список групп приходит из базы и может оказаться короче, чем был при клике
   const cat = CATEGORIES[active] ?? CATEGORIES[0];
+
+  // всплывающее фото банки при наведении — следует за курсором
+  const [preview, setPreview] = useState<{ src: string; x: number; y: number } | null>(null);
 
   return (
     <section id="price" className="px-5 sm:px-8 py-16 sm:py-24 max-w-6xl mx-auto">
@@ -42,7 +45,10 @@ export default function PriceList() {
         {CATEGORIES.map((c, i) => (
           <button
             key={c.name}
-            onClick={() => setActive(i)}
+            onClick={() => {
+              setActive(i);
+              setPreview(null);
+            }}
             className={`rounded-full px-5 py-2.5 text-sm font-medium transition-colors ${
               i === active
                 ? "bg-neutral-900 text-white"
@@ -63,6 +69,10 @@ export default function PriceList() {
               i !== 0 ? "border-t border-[#f0eeea]" : ""
             }`}
             onClick={() => openOrder(p.name)}
+            onMouseMove={(e) =>
+              p.photo && setPreview({ src: p.photo, x: e.clientX, y: e.clientY })
+            }
+            onMouseLeave={() => setPreview(null)}
           >
             <span className="hidden sm:block text-xs text-neutral-300 font-medium w-6">
               {String(i + 1).padStart(2, "0")}
@@ -91,6 +101,22 @@ export default function PriceList() {
           </div>
         ))}
       </motion.div>
+
+      {/* фото банки под курсором — только на устройствах с наведением */}
+      <AnimatePresence>
+        {preview && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.92 }}
+            transition={{ duration: 0.15 }}
+            className="hidden sm:block fixed z-50 pointer-events-none w-40 h-40 rounded-2xl overflow-hidden border border-[#e7e5e0] bg-white shadow-xl"
+            style={{ left: preview.x + 24, top: preview.y - 90 }}
+          >
+            <img src={preview.src} alt="" className="w-full h-full object-cover" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.p {...fadeUp(0.1)} className="mt-5 text-sm text-neutral-400 text-center">
         Нет нужной позиции? Привезём под заказ —{" "}

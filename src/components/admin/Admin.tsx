@@ -103,7 +103,7 @@ export default function Admin() {
       <Screen>
         <form onSubmit={login} className="w-full max-w-sm">
           <div className="text-xs font-medium tracking-[0.2em] uppercase text-[#e8501f] mb-4">
-            ЛКМ ОПТ — панель управления
+            ЛКМ СНАБ — панель управления
           </div>
           <h1 className="font-display font-semibold tracking-[-0.03em] text-4xl mb-8">Вход</h1>
           <input
@@ -133,7 +133,7 @@ export default function Admin() {
       <header className="border-b border-[#e7e5e0] bg-white/80 backdrop-blur px-5 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
         <div>
           <div className="font-display font-semibold tracking-tight text-lg">
-            ЛКМ ОПТ<span className="text-[#e8501f]">.</span>
+            ЛКМ СНАБ<span className="text-[#e8501f]">.</span>
           </div>
           <div className="text-[11px] uppercase tracking-[0.18em] text-neutral-400 mt-0.5">
             Панель управления

@@ -87,7 +87,7 @@ export default function Footer() {
 
         <div className="relative border-t border-white/10 px-7 sm:px-12 py-5 flex flex-wrap items-center justify-between gap-3">
           <span className="text-xs text-white/35">
-            © ЛКМ ОПТ, 2015–{new Date().getFullYear()}
+            © ЛКМ СНАБ, 2015–{new Date().getFullYear()}
           </span>
           <a
             href="#"

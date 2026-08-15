@@ -24,7 +24,7 @@ export default function Navbar() {
     >
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 rounded-full border border-[#e7e5e0] bg-white/80 backdrop-blur-xl pl-6 pr-2 py-2">
         <a href="#top" className="font-display font-bold tracking-tight text-lg">
-          ЛКМ&nbsp;ОПТ<span className="text-[#e8501f]">.</span>
+          ЛКМ&nbsp;СНАБ<span className="text-[#e8501f]">.</span>
         </a>
 
         <nav className="hidden md:flex items-center gap-1">

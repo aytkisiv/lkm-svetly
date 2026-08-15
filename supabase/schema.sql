@@ -19,8 +19,13 @@ create table if not exists products (
   name     text not null,
   note     text,
   price    int  not null default 0,
+  photo    text,
   sort     int  not null default 0
 );
+
+-- Добавляет колонку с фото на уже существующей базе — этот скрипт можно
+-- перезапускать безопасно, alter не упадёт, если колонка уже есть.
+alter table products add column if not exists photo text;
 
 create index if not exists products_category_sort_idx on products (category, sort);
 
