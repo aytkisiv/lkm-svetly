@@ -32,6 +32,9 @@ export default function PriceList() {
         <p className="text-neutral-500 text-sm leading-relaxed max-w-sm">
           Цены за 1 кг при оптовом заказе. Под объём объекта дадим
           персональную цену — и зафиксируем её договором.
+          <span className="block mt-1.5 text-neutral-400">
+            Минимальный заказ — 100 кг, без скидок.
+          </span>
         </p>
       </motion.div>
 

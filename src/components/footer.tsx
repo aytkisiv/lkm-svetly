@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowUp, ArrowUpRight } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { CtaButton } from "./cta";
 import LazyVideo from "./lazy-video";
 import { useOrder } from "./order-modal";
@@ -57,17 +57,9 @@ export default function Footer() {
             </a>
           </div>
           <div>
-            <div className="text-[11px] uppercase tracking-widest text-white/35 mb-3">Почта и мессенджеры</div>
-            <a href="mailto:lkm-opt2024@mail.ru" className="block text-sm text-white/80 hover:text-white transition-colors mb-1.5">
+            <div className="text-[11px] uppercase tracking-widest text-white/35 mb-3">Почта</div>
+            <a href="mailto:lkm-opt2024@mail.ru" className="block text-sm text-white/80 hover:text-white transition-colors">
               lkm-opt2024@mail.ru
-            </a>
-            <a
-              href="https://wa.me/79920033013"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-white/80 hover:text-white transition-colors"
-            >
-              WhatsApp <ArrowUpRight className="w-3.5 h-3.5 text-[#e8501f]" />
             </a>
           </div>
           <div>
