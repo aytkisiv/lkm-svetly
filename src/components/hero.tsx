@@ -122,11 +122,8 @@ export default function Hero() {
             {...appear(0.95)}
             className="mt-6 text-white/60 text-[15px] sm:text-lg leading-relaxed max-w-xl"
           >
-            Отгрузим <em className="font-accent text-white">завтра</em> — по
+            Отгрузим <em className="font-accent text-white">вовремя</em> — по
             цене, зафиксированной <em className="font-accent text-white">сегодня</em>.
-            <span className="block mt-1 text-white/45 text-sm sm:text-base">
-              Грунт-эмали, грунты, эмали и мастики — напрямую от 7 российских заводов.
-            </span>
           </motion.p>
 
           <motion.div
