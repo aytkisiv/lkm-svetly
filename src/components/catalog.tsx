@@ -25,8 +25,7 @@ export default function Catalog() {
         </h2>
         </div>
         <p className="text-neutral-500 text-sm sm:text-[15px] leading-relaxed max-w-sm">
-          Четыре направления защитных покрытий от заводов MASSCO, АКРУС, ВМП,
-          СпецПолимер, М ЛАК и других.
+          Четыре направления защитных покрытий для промышленных и строительных объектов.
         </p>
       </motion.div>
 
