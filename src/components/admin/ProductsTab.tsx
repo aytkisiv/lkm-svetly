@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Trash2, Plus, Check, ImageOff } from 'lucide-react';
+import { Trash2, Plus, Check, ImagePlus, Loader2, X } from 'lucide-react';
 import { supabase, type DbCategory, type DbProduct } from '../../lib/supabase';
 import { CATEGORIES } from '../../data/products';
 import { btnGhost, btnDark, input } from './ui';
+
+const PHOTO_BUCKET = 'product-photos';
+const MAX_PHOTO_MB = 5;
 
 type Row = DbProduct & { dirty?: boolean };
 
@@ -16,6 +19,7 @@ export default function ProductsTab({
   const [rows, setRows] = useState<Row[]>([]);
   const [cat, setCat] = useState(cats[0]?.slug ?? '');
   const [busy, setBusy] = useState(false);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -113,6 +117,49 @@ export default function ProductsTab({
   const edit = (id: string, patch: Partial<DbProduct>) =>
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch, dirty: true } : r)));
 
+  // Фото сохраняется сразу по факту загрузки, отдельно от остальных полей:
+  // иначе легко подумать, что раз нажал «Сохранить» на имени — фото тоже ушло.
+  async function uploadPhoto(row: Row, file: File) {
+    if (!file.type.startsWith('image/')) {
+      return flash('Нужен файл изображения — jpg, png или webp');
+    }
+    if (file.size > MAX_PHOTO_MB * 1024 * 1024) {
+      return flash(`Файл больше ${MAX_PHOTO_MB} МБ — выберите фото поменьше`);
+    }
+
+    setUploadingId(row.id);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const path = `${row.id}-${Date.now()}.${ext}`;
+
+    const { error: upErr } = await supabase!.storage
+      .from(PHOTO_BUCKET)
+      .upload(path, file, { upsert: true, cacheControl: '31536000' });
+    if (upErr) {
+      setUploadingId(null);
+      return flash('Не удалось загрузить фото: ' + upErr.message);
+    }
+
+    const { data } = supabase!.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+    const { error } = await supabase!
+      .from('products')
+      .update({ photo: data.publicUrl })
+      .eq('id', row.id);
+    setUploadingId(null);
+    if (error) return flash('Фото загрузилось, но не сохранилось: ' + error.message);
+
+    setRows((rs) => rs.map((r) => (r.id === row.id ? { ...r, photo: data.publicUrl } : r)));
+    flash('Фото сохранено');
+  }
+
+  async function removePhoto(row: Row) {
+    setUploadingId(row.id);
+    const { error } = await supabase!.from('products').update({ photo: null }).eq('id', row.id);
+    setUploadingId(null);
+    if (error) return flash('Не удалось убрать фото: ' + error.message);
+    setRows((rs) => rs.map((r) => (r.id === row.id ? { ...r, photo: null } : r)));
+    flash('Фото убрано');
+  }
+
   const visible = rows.filter((r) => r.category === cat);
 
   return (
@@ -195,20 +242,45 @@ export default function ProductsTab({
             </div>
 
             {/* фото для подсказки при наведении на позицию в прайсе на сайте */}
-            <div className="flex items-center gap-3 mt-2">
-              <div className="w-10 h-10 rounded-lg border border-[#e7e5e0] bg-[#f4f3ef] overflow-hidden shrink-0 flex items-center justify-center">
-                {row.photo ? (
-                  <img src={row.photo} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <ImageOff className="w-4 h-4 text-neutral-300" />
-                )}
-              </div>
-              <input
-                value={row.photo ?? ''}
-                placeholder="Ссылка на фото банки (необязательно)"
-                onChange={(e) => edit(row.id, { photo: e.target.value })}
-                className={`${input} text-[13px] text-neutral-500 placeholder:text-neutral-300`}
-              />
+            <div className="flex items-center gap-3 mt-3">
+              <label
+                className={`group relative flex items-center gap-3 ${
+                  uploadingId === row.id ? 'pointer-events-none' : 'cursor-pointer'
+                }`}
+              >
+                <div className="w-14 h-14 rounded-xl border-2 border-dashed border-[#e7e5e0] group-hover:border-[#e8501f] bg-[#f4f3ef] overflow-hidden shrink-0 flex items-center justify-center transition-colors">
+                  {uploadingId === row.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-neutral-400" />
+                  ) : row.photo ? (
+                    <img src={row.photo} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <ImagePlus className="w-5 h-5 text-neutral-300 group-hover:text-[#e8501f] transition-colors" />
+                  )}
+                </div>
+                <span className="text-sm text-neutral-500 group-hover:text-neutral-900 transition-colors">
+                  {row.photo ? 'Заменить фото' : 'Добавить фото банки'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingId === row.id}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (file) uploadPhoto(row, file);
+                  }}
+                />
+              </label>
+              {row.photo && uploadingId !== row.id && (
+                <button
+                  onClick={() => removePhoto(row)}
+                  aria-label="Убрать фото"
+                  className="p-1.5 text-neutral-300 hover:text-[#e8501f] transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         ))}

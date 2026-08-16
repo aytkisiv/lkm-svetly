@@ -81,6 +81,42 @@ create policy "orders: изменение вошедшим"
   on orders for update to authenticated using (true) with check (true);
 
 -- ─────────────────────────────────────────────────────────────
+-- Фото товаров: хранилище Supabase Storage.
+-- Читать может кто угодно (фото показываются на публичном сайте),
+-- загружать и удалять — только вошедший в админку.
+-- ─────────────────────────────────────────────────────────────
+
+insert into storage.buckets (id, name, public)
+values ('product-photos', 'product-photos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "product-photos: чтение всем" on storage.objects;
+drop policy if exists "product-photos: запись вошедшим" on storage.objects;
+drop policy if exists "product-photos: изменение вошедшим" on storage.objects;
+drop policy if exists "product-photos: удаление вошедшим" on storage.objects;
+
+create policy "product-photos: чтение всем"
+  on storage.objects for select
+  to anon, authenticated
+  using (bucket_id = 'product-photos');
+
+create policy "product-photos: запись вошедшим"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'product-photos');
+
+create policy "product-photos: изменение вошедшим"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'product-photos')
+  with check (bucket_id = 'product-photos');
+
+create policy "product-photos: удаление вошедшим"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'product-photos');
+
+-- ─────────────────────────────────────────────────────────────
 -- Проверка: строк быть не должно.
 -- Каждая строка здесь — дыра, через которую посетитель сайта
 -- достаёт телефоны клиентов.
