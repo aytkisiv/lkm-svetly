@@ -1,4 +1,4 @@
-import { sbAdmin } from './_tg';
+import { sbAdmin } from './_db';
 
 export const config = { runtime: 'edge' };
 
@@ -14,22 +14,24 @@ type Payload = {
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const line = (icon: string, label: string, value?: string) =>
-  value && value.trim() ? `${icon} <b>${label}:</b> ${esc(value.trim())}\n` : '';
+const row = (label: string, value?: string) =>
+  value && value.trim()
+    ? `<tr><td style="padding:4px 12px 4px 0;color:#8a8a8a;white-space:nowrap;">${label}</td><td style="padding:4px 0;"><b>${esc(value.trim())}</b></td></tr>`
+    : '';
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405);
   }
 
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatIds = (process.env.TELEGRAM_CHAT_ID || '')
+  const resendKey = process.env.RESEND_API_KEY;
+  const to = (process.env.ORDERS_EMAIL_TO || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 
-  if (!token || chatIds.length === 0) {
-    return json({ error: 'Telegram is not configured' }, 500);
+  if (!resendKey || to.length === 0) {
+    return json({ error: 'Email is not configured' }, 500);
   }
 
   let data: Payload;
@@ -51,14 +53,12 @@ export default async function handler(req: Request): Promise<Response> {
     return json({ error: 'Проверьте номер телефона — не хватает цифр' }, 400);
   }
 
-  // сохраняем заявку в базу — из неё бот показывает раздел «Клиенты».
-  // Если хранилище не настроено или недоступно, заявка всё равно уйдёт в чат:
+  // сохраняем заявку в базу — из неё считается «Сводка» в админке.
+  // Если хранилище не настроено или недоступно, письмо всё равно уйдёт:
   // потерять обращение клиента из-за проблем с базой недопустимо.
-  let orderId = '';
   try {
     const res = await sbAdmin('orders', {
       method: 'POST',
-      headers: { Prefer: 'return=representation' },
       body: JSON.stringify({
         product: data.product?.trim() || null,
         name,
@@ -67,65 +67,48 @@ export default async function handler(req: Request): Promise<Response> {
         comment: data.comment?.trim() || null,
       }),
     });
-    if (res?.ok) {
-      const [row] = (await res.json()) as { id: string }[];
-      orderId = row?.id || '';
-    } else if (res) {
-      console.error('Не удалось сохранить заявку:', await res.text());
-    }
+    if (res && !res.ok) console.error('Не удалось сохранить заявку:', await res.text());
   } catch (e) {
     console.error('Ошибка записи заявки:', e);
   }
 
   const time = new Intl.DateTimeFormat('ru-RU', {
     timeZone: 'Asia/Yekaterinburg',
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+    dateStyle: 'medium',
+    timeStyle: 'short',
   }).format(new Date());
 
-  const text =
-    `🔔 <b>Новая заявка с сайта</b>\n\n` +
-    line('📦', 'Позиция', data.product) +
-    line('👤', 'Имя', name) +
-    line('📞', 'Телефон', phone) +
-    line('✉️', 'Email', data.email) +
-    line('💬', 'Комментарий', data.comment) +
-    `\n🕐 ${time} (Екатеринбург)`;
+  const html =
+    `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#141414;">` +
+    `<h2 style="margin:0 0 16px;">Новая заявка с сайта ЛКМ СНАБ</h2>` +
+    `<table cellpadding="0" cellspacing="0">` +
+    row('Позиция', data.product) +
+    row('Имя', name) +
+    row('Телефон', phone) +
+    row('Email', data.email) +
+    row('Комментарий', data.comment) +
+    `</table>` +
+    `<p style="margin-top:16px;color:#8a8a8a;">${time} (Екатеринбург)</p>` +
+    `</div>`;
 
-  // кнопки: написать в WhatsApp и скопировать номер одним касанием
-  const digits = phone.replace(/\D/g, '').replace(/^8/, '7');
-  const keyboard: unknown[][] = [];
-  if (digits.length >= 11) {
-    keyboard.push([{ text: '💬 Написать в WhatsApp', url: `https://wa.me/${digits}` }]);
-  }
-  keyboard.push([{ text: '📋 Скопировать телефон', copy_text: { text: phone } }]);
-  keyboard.push([
-    { text: '✅ Взял в работу', callback_data: orderId ? 'take:' + orderId : 'take' },
-  ]);
+  const r = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: process.env.ORDERS_EMAIL_FROM || 'ЛКМ СНАБ <onboarding@resend.dev>',
+      to,
+      reply_to: data.email?.trim() || undefined,
+      subject: `Заявка с сайта — ${name}`,
+      html,
+    }),
+  });
 
-  const results = await Promise.all(
-    chatIds.map(async (chat_id) => {
-      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id,
-          text,
-          parse_mode: 'HTML',
-          reply_markup: { inline_keyboard: keyboard },
-          disable_web_page_preview: true,
-        }),
-      });
-      const body = (await r.json().catch(() => ({}))) as { description?: string };
-      if (!r.ok) console.error('Telegram error:', r.status, body.description);
-      return { ok: r.ok, description: body.description };
-    })
-  );
-
-  if (!results.some((r) => r.ok)) {
-    // подробности пишем в логи Vercel, наружу их не отдаём
+  if (!r.ok) {
+    // подробности — в логи Vercel, наружу их не отдаём
+    console.error('Resend error:', r.status, await r.text().catch(() => ''));
     return json({ error: 'Не удалось отправить заявку' }, 502);
   }
   return json({ ok: true });

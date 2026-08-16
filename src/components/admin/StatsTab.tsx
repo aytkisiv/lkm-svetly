@@ -100,7 +100,7 @@ export default function StatsTab({ flash }: { flash: (t: string) => void }) {
           ))}
           {byStatus('new') > 0 && (
             <p className="mt-4 text-[13px] text-[#e8501f] leading-relaxed">
-              Необработанных заявок: {byStatus('new')}. Их видно в боте по кнопке «Клиенты».
+              Необработанных заявок: {byStatus('new')}. Список и статусы — на вкладке «Заявки».
             </p>
           )}
         </Card>

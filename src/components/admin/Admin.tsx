@@ -4,14 +4,16 @@ import { supabase, type DbCategory } from '../../lib/supabase';
 import { CATEGORIES } from '../../data/products';
 import ProductsTab from './ProductsTab';
 import CategoriesTab from './CategoriesTab';
+import OrdersTab from './OrdersTab';
 import StatsTab from './StatsTab';
 import { input, btnDark } from './ui';
 
-type Tab = 'products' | 'categories' | 'stats';
+type Tab = 'products' | 'categories' | 'orders' | 'stats';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'products', label: 'Товары' },
   { id: 'categories', label: 'Группы' },
+  { id: 'orders', label: 'Заявки' },
   { id: 'stats', label: 'Сводка' },
 ];
 
@@ -171,6 +173,7 @@ export default function Admin() {
       <main className="px-5 sm:px-8 pb-16 max-w-5xl mx-auto">
         {tab === 'products' && <ProductsTab cats={cats} flash={flash} />}
         {tab === 'categories' && <CategoriesTab cats={cats} reload={loadCats} flash={flash} />}
+        {tab === 'orders' && <OrdersTab flash={flash} />}
         {tab === 'stats' && <StatsTab flash={flash} />}
       </main>
 
