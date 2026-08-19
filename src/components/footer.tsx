@@ -48,10 +48,7 @@ export default function Footer() {
         {/* контакты */}
         <div className="relative border-t border-white/10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 px-7 sm:px-12 py-10">
           <div>
-            <div className="text-[11px] uppercase tracking-widest text-white/35 mb-3">Телефоны</div>
-            <a href="tel:+73432903323" className="block text-sm text-white/80 hover:text-white transition-colors mb-1.5">
-              8 (343) 290-33-23
-            </a>
+            <div className="text-[11px] uppercase tracking-widest text-white/35 mb-3">Телефон</div>
             <a href="tel:+79966003293" className="block text-sm text-white/80 hover:text-white transition-colors">
               +7 (996) 600-32-93
             </a>
