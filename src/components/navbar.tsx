@@ -41,10 +41,10 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <a
-            href="tel:+79920033013"
+            href="tel:+79966003293"
             className="hidden lg:block text-sm font-medium text-neutral-700 hover:text-neutral-900 transition-colors"
           >
-            +7 (992) 003-30-13
+            +7 (996) 600-32-93
           </a>
           <CtaButton variant="dark" size="md" className="hidden sm:inline-flex" onClick={() => openOrder()}>
             Оставить заявку

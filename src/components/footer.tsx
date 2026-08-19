@@ -52,8 +52,8 @@ export default function Footer() {
             <a href="tel:+73432903323" className="block text-sm text-white/80 hover:text-white transition-colors mb-1.5">
               8 (343) 290-33-23
             </a>
-            <a href="tel:+79920033013" className="block text-sm text-white/80 hover:text-white transition-colors">
-              +7 (992) 003-30-13
+            <a href="tel:+79966003293" className="block text-sm text-white/80 hover:text-white transition-colors">
+              +7 (996) 600-32-93
             </a>
           </div>
           <div>
