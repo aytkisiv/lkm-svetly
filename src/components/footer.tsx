@@ -55,8 +55,8 @@ export default function Footer() {
           </div>
           <div>
             <div className="text-[11px] uppercase tracking-widest text-white/35 mb-3">Почта</div>
-            <a href="mailto:lkm-opt2024@mail.ru" className="block text-sm text-white/80 hover:text-white transition-colors">
-              lkm-opt2024@mail.ru
+            <a href="mailto:snab.lkm@mail.ru" className="block text-sm text-white/80 hover:text-white transition-colors">
+              snab.lkm@mail.ru
             </a>
           </div>
           <div>
