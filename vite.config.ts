@@ -16,11 +16,13 @@ export default defineConfig({
     // чтобы каждый кусок гарантированно проходил целиком.
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ["react", "react-dom"],
-          motion: ["framer-motion"],
-          icons: ["lucide-react"],
-          router: ["wouter"],
+        // По одному чанку на пакет: чем мельче файлы, тем надёжнее они
+        // доходят через фильтрацию у российских провайдеров.
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          const m = id.split("node_modules/")[1].split("/");
+          const pkg = m[0].startsWith("@") ? `${m[0]}/${m[1]}` : m[0];
+          return "v-" + pkg.replace("@", "").replace("/", "-");
         },
       },
     },

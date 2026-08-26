@@ -6,9 +6,11 @@
 		<link rel="icon" href="/favicon.ico" />
 		<meta property="og:image" content="/og-image.png" />
 		<meta name="description" content="Оптовые поставки промышленных ЛКМ: грунт-эмали, грунты, эмали, мастики. Отгрузка со склада в Екатеринбурге за 24 часа. Доставка по всей России." />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Golos+Text:wght@400;500;600&family=STIX+Two+Text:ital,wght@1,400;1,500&display=swap" rel="stylesheet" />
+		<!-- Шрифты лежат у нас: запрос к Google блокировал отрисовку страницы,
+		     а у части провайдеров РФ он не проходил — получался белый экран. -->
+		<link rel="stylesheet" href="/fonts/fonts.css" />
+		<link rel="preload" as="font" type="font/woff2" href="/fonts/Onest-600-cyrillic.woff2" crossorigin />
+		<link rel="preload" as="font" type="font/woff2" href="/fonts/GolosText-400-cyrillic.woff2" crossorigin />
 		<title>ЛКМ СНАБ — промышленные защитные покрытия оптом</title>
 	</head>
 	<body>
