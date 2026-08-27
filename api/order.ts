@@ -110,9 +110,28 @@ function buildEmail(opts: {
 </html>`;
 }
 
+/**
+ * Статика теперь может лежать не на Vercel (см. VITE_API_BASE), а сюда
+ * заявка приходит с чужого для браузера origin — без этих заголовков
+ * запрос отваливается на CORS-preflight ещё до того, как долетит сюда.
+ */
+function cors(origin: string | null) {
+  return {
+    'Access-Control-Allow-Origin': origin || '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    Vary: 'Origin',
+  };
+}
+
 export default async function handler(req: Request): Promise<Response> {
+  const corsHeaders = cors(req.headers.get('origin'));
+
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+    return json({ error: 'Method not allowed' }, 405, corsHeaders);
   }
 
   const resendKey = process.env.RESEND_API_KEY;
@@ -122,26 +141,26 @@ export default async function handler(req: Request): Promise<Response> {
     .filter(Boolean);
 
   if (!resendKey || to.length === 0) {
-    return json({ error: 'Email is not configured' }, 500);
+    return json({ error: 'Email is not configured' }, 500, corsHeaders);
   }
 
   let data: Payload;
   try {
     data = (await req.json()) as Payload;
   } catch {
-    return json({ error: 'Bad request' }, 400);
+    return json({ error: 'Bad request' }, 400, corsHeaders);
   }
 
   // ловушка для ботов: заполнено — молча делаем вид, что всё хорошо
-  if (data.hp) return json({ ok: true });
+  if (data.hp) return json({ ok: true }, 200, corsHeaders);
 
   const name = (data.name || '').trim();
   const phone = (data.phone || '').trim();
   if (name.length < 2) {
-    return json({ error: 'Укажите ваше имя' }, 400);
+    return json({ error: 'Укажите ваше имя' }, 400, corsHeaders);
   }
   if (phone.replace(/\D/g, '').length < 10) {
-    return json({ error: 'Проверьте номер телефона — не хватает цифр' }, 400);
+    return json({ error: 'Проверьте номер телефона — не хватает цифр' }, 400, corsHeaders);
   }
 
   // сохраняем заявку в базу — из неё считается «Сводка» в админке.
@@ -196,14 +215,14 @@ export default async function handler(req: Request): Promise<Response> {
   if (!r.ok) {
     // подробности — в логи Vercel, наружу их не отдаём
     console.error('Resend error:', r.status, await r.text().catch(() => ''));
-    return json({ error: 'Не удалось отправить заявку' }, 502);
+    return json({ error: 'Не удалось отправить заявку' }, 502, corsHeaders);
   }
-  return json({ ok: true });
+  return json({ ok: true }, 200, corsHeaders);
 }
 
-function json(body: unknown, status = 200) {
+function json(body: unknown, status = 200, extraHeaders: HeadersInit = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...extraHeaders },
   });
 }

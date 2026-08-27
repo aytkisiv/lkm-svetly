@@ -3,9 +3,11 @@ import LazyVideo from "./lazy-video";
 import { useOrder } from "./order-modal";
 import { CtaButton } from "./cta";
 
-// Промышленная покраска металла распылителем (Pexels, свободная лицензия)
-const PAINT_VIDEO =
-  "https://videos.pexels.com/video-files/11887089/11887089-hd_1920_1080_25fps.mp4";
+// Промышленная покраска металла распылителем (Pexels, свободная лицензия).
+// Видео лежит у нас, а не на videos.pexels.com: внешний CDN у части
+// провайдеров РФ не грузился вообще — карточка оставалась пустой.
+const PAINT_VIDEO = "/about-loop.mp4";
+const PAINT_POSTER = "/about-poster.jpg";
 
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 24 },
@@ -34,6 +36,7 @@ export default function About() {
         >
           <LazyVideo
             src={PAINT_VIDEO}
+            poster={PAINT_POSTER}
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/20" />

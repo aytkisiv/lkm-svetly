@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Info, X } from "lucide-react";
 import { useCatalog } from "../hooks/useCatalog";
 import { useOrder } from "./order-modal";
+import type { Product } from "../data/products";
 
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 24 },
@@ -20,6 +21,8 @@ export default function PriceList() {
 
   // всплывающее фото банки при наведении — следует за курсором
   const [preview, setPreview] = useState<{ src: string; x: number; y: number } | null>(null);
+  // карточка с описанием и нюансами применения — открывается по кнопке "i"
+  const [details, setDetails] = useState<Product | null>(null);
 
   return (
     <section id="price" className="px-5 sm:px-8 py-16 sm:py-24 max-w-6xl mx-auto">
@@ -91,6 +94,16 @@ export default function PriceList() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                setDetails(p);
+              }}
+              aria-label="О товаре: описание и свойства"
+              className="p-2 -m-2 text-neutral-300 hover:text-neutral-900 transition-colors"
+            >
+              <Info className="w-4 h-4" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
                 openOrder(p.name);
               }}
               className="hidden sm:flex items-center gap-1.5 rounded-full border border-[#e7e5e0] group-hover:border-neutral-900 group-hover:bg-neutral-900 group-hover:text-white px-5 py-2.5 text-sm font-medium transition-colors whitespace-nowrap"
@@ -114,6 +127,71 @@ export default function PriceList() {
             style={{ left: preview.x + 24, top: preview.y - 90 }}
           >
             <img src={preview.src} alt="" className="w-full h-full object-cover" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* карточка товара: описание, свойства и нюансы применения */}
+      <AnimatePresence>
+        {details && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6"
+            onClick={() => setDetails(null)}
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden"
+            >
+              {details.photo && (
+                <img src={details.photo} alt="" className="w-full h-48 object-cover" />
+              )}
+              <div className="p-7 sm:p-9">
+                <div className="flex items-start justify-between mb-4 gap-4">
+                  <div>
+                    <h3 className="font-display font-semibold text-xl sm:text-2xl tracking-tight">
+                      {details.name}
+                    </h3>
+                    {details.note && (
+                      <p className="mt-1 text-sm text-neutral-400">{details.note}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setDetails(null)}
+                    className="p-2 -m-2 text-neutral-400 hover:text-neutral-900 transition-colors shrink-0"
+                    aria-label="Закрыть"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-sm text-neutral-600 leading-relaxed whitespace-pre-line">
+                  {details.description ||
+                    "Подробное описание уточняйте у менеджера — расскажем про свойства и нюансы применения под ваш объект."}
+                </p>
+
+                <div className="mt-7 flex items-center justify-between gap-4 pt-6 border-t border-[#f0eeea]">
+                  <span className="text-lg font-medium">{details.price} ₽/кг</span>
+                  <button
+                    onClick={() => {
+                      const name = details.name;
+                      setDetails(null);
+                      openOrder(name);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 text-white px-6 py-3 text-sm font-medium hover:bg-black transition-colors whitespace-nowrap"
+                  >
+                    Заказать
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

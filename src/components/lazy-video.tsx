@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function LazyVideo({ src, className }: { src: string; className?: string }) {
+export default function LazyVideo({
+  src,
+  poster,
+  className,
+}: {
+  src: string;
+  poster?: string;
+  className?: string;
+}) {
   const ref = useRef<HTMLVideoElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -25,6 +33,7 @@ export default function LazyVideo({ src, className }: { src: string; className?:
       ref={ref}
       className={className}
       src={visible ? src : undefined}
+      poster={poster}
       autoPlay
       muted
       loop

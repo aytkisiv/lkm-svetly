@@ -44,6 +44,7 @@ export default function ProductsTab({
         note: row.note?.trim() || null,
         price: row.price,
         photo: row.photo?.trim() || null,
+        description: row.description?.trim() || null,
       })
       .eq('id', row.id);
     setBusy(false);
@@ -282,6 +283,15 @@ export default function ProductsTab({
                 </button>
               )}
             </div>
+
+            {/* описание: свойства и нюансы применения — видно на сайте по клику на товар */}
+            <textarea
+              value={row.description ?? ''}
+              placeholder="Описание — свойства и нюансы применения (необязательно)"
+              rows={2}
+              onChange={(e) => edit(row.id, { description: e.target.value })}
+              className={`${input} mt-3 resize-y placeholder:text-neutral-300`}
+            />
           </div>
         ))}
 

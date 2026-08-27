@@ -4,9 +4,10 @@ import { CtaButton } from "./cta";
 import LazyVideo from "./lazy-video";
 import { useOrder } from "./order-modal";
 
-// Расплавленный металл в цехе (Pexels, свободная лицензия)
-const METAL_VIDEO =
-  "https://videos.pexels.com/video-files/5121701/5121701-hd_1920_1080_25fps.mp4";
+// Расплавленный металл в цехе (Pexels, свободная лицензия).
+// Видео лежит у нас, а не на videos.pexels.com — см. about.tsx.
+const METAL_VIDEO = "/footer-loop.mp4";
+const METAL_POSTER = "/footer-poster.jpg";
 
 export default function Footer() {
   const { openOrder } = useOrder();
@@ -18,6 +19,7 @@ export default function Footer() {
         <div className="relative min-h-[420px] flex flex-col items-center justify-center text-center px-6 py-20">
           <LazyVideo
             src={METAL_VIDEO}
+            poster={METAL_POSTER}
             className="absolute inset-0 w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-[#141414]/60" />

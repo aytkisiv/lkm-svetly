@@ -11,6 +11,7 @@ type DbProd = {
   note: string | null;
   price: number;
   photo: string | null;
+  description: string | null;
   sort: number;
 };
 
@@ -20,18 +21,39 @@ type DbProd = {
  * каталогу нужны всего два GET-запроса, ради них её грузить незачем —
  * в админке она по-прежнему используется.
  */
+const PAGE = 30;
+
+/**
+ * Весь прайс одним запросом — это ~35 КБ даже сжатым: у части провайдеров
+ * РФ такая передача обрывается на середине (та же причина, по которой раньше
+ * дробили JS-бандл на чанки). Тянем страницами по PAGE строк — каждая
+ * заведомо укладывается в размер, который проходит целиком.
+ */
+async function fetchAll<T>(path: string, signal: AbortSignal): Promise<T[]> {
+  const h = { apikey: KEY!, Authorization: `Bearer ${KEY}` };
+  const out: T[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const r = await fetch(`${URL_}/rest/v1/${path}&limit=${PAGE}&offset=${offset}`, {
+      headers: h,
+      signal,
+    });
+    if (!r.ok) throw new Error(`db fetch failed: ${path}`);
+    const chunk = (await r.json()) as T[];
+    out.push(...chunk);
+    if (chunk.length < PAGE) return out;
+  }
+}
+
 async function loadFromDb(signal: AbortSignal) {
   if (!URL_ || !KEY) return null;
-  const h = { apikey: KEY, Authorization: `Bearer ${KEY}` };
-  const get = async <T>(path: string): Promise<T[] | null> => {
-    const r = await fetch(`${URL_}/rest/v1/${path}`, { headers: h, signal });
-    return r.ok ? ((await r.json()) as T[]) : null;
-  };
   const [cats, prods] = await Promise.all([
-    get<DbCat>('categories?select=slug,name,descr,photo,sort&order=sort'),
-    get<DbProd>('products?select=category,name,note,price,photo,sort&order=sort'),
+    fetchAll<DbCat>('categories?select=slug,name,descr,photo,sort&order=sort', signal),
+    fetchAll<DbProd>(
+      'products?select=category,name,note,price,photo,description,sort&order=sort',
+      signal
+    ),
   ]);
-  return prods?.length ? { cats, prods } : null;
+  return prods.length ? { cats, prods } : null;
 }
 
 /**
@@ -72,6 +94,7 @@ export function useCatalog(): ProductCategory[] {
                 note: p.note ?? undefined,
                 price: p.price,
                 photo: p.photo ?? undefined,
+                description: p.description ?? undefined,
               })),
           }))
         );

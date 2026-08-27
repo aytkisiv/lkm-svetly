@@ -23,7 +23,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
     setPending(true);
     setError("");
     try {
-      const res = await fetch("/api/order", {
+      // На Vercel путь относительный. При размещении статики на другом хостинге
+      // (например, российском) задаётся VITE_API_BASE — заявки продолжают
+      // уходить в ту же серверную функцию.
+      const res = await fetch(`${import.meta.env.VITE_API_BASE ?? ""}/api/order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, phone, product, comment, hp }),
